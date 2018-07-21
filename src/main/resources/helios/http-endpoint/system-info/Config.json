@@ -1,0 +1,5 @@
+{
+  "$schema": "#helios/http-endpoint-config.json",
+  "sharedGlobalScope": false,
+  "description": "HTTP Endpoint that demonstrates how to use custom APIs in scripts and custom functions in templates. Only available method is GET."
+}

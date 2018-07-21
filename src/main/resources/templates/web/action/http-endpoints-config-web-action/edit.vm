@@ -1,0 +1,61 @@
+<html>
+<head>
+    <title>Helios HTTP Endpoints</title>
+    <meta name="admin.active.section" content="admin_plugins_menu"/>
+</head>
+<body>
+<form action="HeliosEditHttpEndpointAction.jspa">
+    <input type="submit" value="Add New HTTP Endpoint" class="aui-button aui-button-primary"/>
+</form>
+<form id="delete-http-endpoint-form" action="HeliosHttpEndpointsConfigAction.jspa" method="post">
+    <input type="hidden" name="action" value="delete"/>
+    <input id="delete-http-endpoint-id" type="hidden" name="httpEndpointId"/>
+</form>
+<table class="aui">
+    <thead>
+    <tr>
+        <th id="httpEndpoint">HTTP Endpoints</th>
+        <th id="actions" style="width: 100px">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    #foreach($httpEndpoint in $action.getHttpEndpoints())
+    <tr>
+        <td headers="httpEndpoint">
+            #if($httpEndpoint.description)
+            <div style="font-style: italic;">$httpEndpoint.description</div>
+            #end
+            <div><strong>Name: </strong>$httpEndpoint.endpointName</div>
+            <div><strong>Script: </strong>$action.getScript($httpEndpoint)</div>
+            <div><strong>Allow Anonymous: </strong>$httpEndpoint.allowAnonymous</div>
+            <div><strong>URL: </strong>$action.getURL($httpEndpoint)</div>
+            <div><strong>Allowed Methods: </strong>$action.getAllowedMethods($httpEndpoint)</div>
+            <div><strong>ID: </strong>$httpEndpoint.ID</div>
+        </td>
+        <td headers="actions">
+            <a href="HeliosEditHttpEndpointAction.jspa?httpEndpointId=$httpEndpoint.ID">Edit</a>
+            <a href="#" style="margin-left: 5px;" onclick="deleteHttpEndpoint($httpEndpoint.ID)">Delete</a>
+        </td>
+    </tr>
+    #end
+    </tbody>
+</table>
+
+<script>
+    #if($action.httpEndpointSaved())
+        AJS.flag({
+            resourceType: "success",
+            body: 'HTTP Endpoint was saved.'
+        });
+    #end
+
+    function deleteHttpEndpoint(id) {
+        var confirmation = confirm("Are you sure you would like to delete HTTP endpoint?")
+        if (confirmation) {
+            AJS.$('#delete-http-endpoint-id').val(id);
+            AJS.$('#delete-http-endpoint-form').submit();
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<div>Issues Assigned to Me: $scriptParams.issuesAssignedToMe</div>
+<div>Base URL: ${scriptParams.baseUrl}</div>
+##$Helios.formatUtils.getMBs function demonstrates how to access custom template functions
+<div>Max Heap Size: $Helios.formatUtils.getMBs($scriptParams.maxHeapSize)</div>

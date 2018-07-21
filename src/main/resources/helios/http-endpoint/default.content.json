@@ -1,0 +1,5 @@
+{
+  "$schema": "#helios/http-endpoint-config.json",
+  "sharedGlobalScope": false,
+  "description": ""
+}

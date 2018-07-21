@@ -1,0 +1,50 @@
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <param name="plugin-icon">images/pluginIcon.png</param>
+        <param name="plugin-logo">images/pluginLogo.png</param>
+    </plugin-info>
+
+    <!-- add our i18n resource -->
+    <resource type="i18n" name="i18n" location="hyperion-extension-plugin"/>
+
+    <ao key="helios-ao-module">
+        <entity>hyperion.jira.extension.ao.models.AOHTTPEndpoint</entity>
+    </ao>
+
+    <webwork1 key="edit-http-endpoint-action" name="Helios Edit HTTP Endpoint Web Action" class="java.lang.Object" roles-required="admin">
+        <actions>
+            <action name="hyperion.jira.extension.web.action.EditHTTPEndpointAction" alias="HeliosEditHttpEndpointAction">
+                <view name="input">/templates/web/action/edit-http-endpoint-web-action/edit.vm</view>
+            </action>
+        </actions>
+    </webwork1>
+    <webwork1 key="http-endpoints-config-action" name="Helios HTTP Endpoints Web Action" class="java.lang.Object" roles-required="admin">
+        <actions>
+            <action name="hyperion.jira.extension.web.action.HTTPEndpointsConfigAction" alias="HeliosHttpEndpointsConfigAction">
+                <view name="input">/templates/web/action/http-endpoints-config-web-action/edit.vm</view>
+            </action>
+        </actions>
+    </webwork1>
+
+    <web-section key="helios-plugin-section" name="Helios Plugin Admin Section" location="admin_plugins_menu" weight="160">
+        <label>Helios</label>
+    </web-section>
+    <web-item key="helios-http-endpoints" name="Helios HTTP Endpoints Link" section="admin_plugins_menu/helios-plugin-section" weight="17">
+        <label>HTTP Endpoints</label>
+        <link linkId="helios-http-endpoints-link">/secure/admin/HeliosHttpEndpointsConfigAction.jspa</link>
+    </web-item>
+
+    <servlet name="Helios HTTP Endpoint Servlet" key="helios-servlet" class="hyperion.jira.extension.servlet.HeliosServlet">
+        <description>Helios HTTP Endpoint Servlet</description>
+        <url-pattern>/helios</url-pattern>
+        <url-pattern>/helios/*</url-pattern>
+    </servlet>
+
+    <web-resource key="ace-editor" name="Ace Editor">
+        <resource type="download" name="ace.js" location="js/ace/ace.js"/>
+        <resource type="download" name="mode-json.js" location="js/ace/mode-json.js"/>
+    </web-resource>
+</atlassian-plugin>

@@ -1,0 +1,4 @@
+##Modified JIRA multi user picker custom field template to include number of assigned issues
+#foreach ($assignee in $assignees)
+    <customfieldvalue><![CDATA[$!xmlutils.escapeForCdata($!$assignee.key.name) ($!assignee.value)]]></customfieldvalue>
+#end

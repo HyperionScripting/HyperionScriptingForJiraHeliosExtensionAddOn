@@ -1,0 +1,20 @@
+[
+  {
+    "uri": "#helios/http-endpoint-config.json",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "sharedGlobalScope": {
+          "type": "boolean",
+          "default": false,
+          "description": "When a shared global scope is disabled then the same type of scripts always run in an isolated JavaScript global scope. If a shared global scope is enabled then the same type of scripts share JavaScript global scope. Enabling shared global scope slightly increases the performance but requires extra care to make sure that the script does not assign variables to be used in global scope. Enabling shared global scope can be useful for some use cases such as for diagnostics and profiling, which allows to store execution count and time in shared global scope for later retrieval. Read more about scope isolation at http://hyperionscripting.com/doc/jira/scripting/latest/#shared-global-scope"
+        },
+        "description": {
+          "type": "string",
+          "default": "",
+          "description": "Resource description."
+        }
+      }
+    }
+  }
+]

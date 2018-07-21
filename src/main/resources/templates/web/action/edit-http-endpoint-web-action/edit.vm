@@ -1,0 +1,258 @@
+$webResourceManager.requireResource("com.atlassian.auiplugin:ajs")
+$webResourceManager.requireResource("com.atlassian.auiplugin:aui-select")
+$webResourceManager.requireResource("com.atlassian.auiplugin:aui-spinner")
+$webResourceManager.requireResource("com.atlassian.auiplugin:aui-experimental-iconfont")
+$webResourceManager.requireResource("com.ionfraction.hyperion-extension-plugin:ace-editor")
+
+<html>
+<head>
+    <title>Save Helios HTTP Endpoint</title>
+    <meta name="admin.active.section" content="admin_plugins_menu"/>
+    <script>
+        #set($selectedResource = $action.getSelectedResource())
+        #set($resourceType = $action.getResourceType())
+        #set($selectedEvents = $action.getSelectedEvents())
+        #set($d = "$")
+        #if($action.getHttpEndpointId() == 0 && $action.getJSONConfig().length() == 0)
+            var skipFirstSelection = false;
+        #else
+            var skipFirstSelection = true;
+        #end
+
+        function getDescription() {
+            AJS.$("#resource-description").hide();
+            AJS.${d}.ajax({
+              url: "/rest/hyperion/1.0/description",
+              type: "POST",
+              contentType: "application/json; charset=UTF-8",
+              data: JSON.stringify({
+                resourceId: "${resourceType}."+AJS.$("#select-resource").val(),
+                editor: "Config"
+              }),
+              dataType: "json",
+              success: function(response) {
+                if (response.description) {
+                    AJS.$("#resource-description").html(response.description);
+                    AJS.$("#resource-description").show();
+                }
+              }
+            });
+        }
+
+        function resourceValueChanged() {
+            if (skipFirstSelection) {
+                skipFirstSelection = false;
+            } else {
+                AJS.$("#ace-editor").hide();
+                AJS.$("#ace-editor-loading").spin();
+                let trySetEditorValue = function(value) {
+                    try {
+                        editor.setValue(value, 1);
+                        AJS.$("#ace-editor").show();
+                        AJS.$("#ace-editor-loading").spinStop();
+                    } catch (e) {
+                        setTimeout(function() {
+                            trySetEditorValue(value);
+                        }, 100);
+                    }
+                }
+                AJS.${d}.ajax({
+                  url: "/rest/hyperion/1.0/sampleAdminConfig",
+                  type: "POST",
+                  contentType: "application/json; charset=UTF-8",
+                  data: JSON.stringify({
+                    resourceId: "${resourceType}."+AJS.$("#select-resource").val(),
+                    editor: "Script"
+                  }),
+                  dataType: "json",
+                  success: function(response) {
+                    try {
+                        if (response.sample != "null") {
+                            trySetEditorValue(JSON.stringify(JSON.parse(response.sample), null, "\t"), -1);
+                        } else {
+                            trySetEditorValue("");
+                        }
+                    } catch (e) {
+                        trySetEditorValue("");
+                    }
+                  },
+                  error: function() {
+                    trySetEditorValue("");
+                  }
+                });
+
+                getDescription();
+            }
+        }
+    </script>
+</head>
+<body>
+<h1>Save Helios HTTP Endpoint</h1>
+
+#if($action.hasAnyErrors())
+<div class="aui-message aui-message-error">
+    <p class="title">
+        <strong>Error occurred while saving HTTP Endpoint. Please resolve those errors before proceeding.</strong>
+    </p>
+    #foreach ($error in $action.getErrorMessages())
+    <p>$error</p>
+    #end
+</div>
+#end
+<form id="config-form" class="aui" action="HeliosEditHttpEndpointAction.jspa?httpEndpointId=$action.getHttpEndpointId()" method="post">
+    <div class="field-group">
+        <label for="description">Name <span class="aui-icon icon-required">(required)</span></label>
+        <input class="text long-field" id="name" name="name" value="$action.getName()"/>
+        <span id="name-tooltip" class="aui-icon aui-icon-small aui-iconfont-info" style="padding-top: 15px; vertical-align: top;" title="Endpoint name that will be included in the URL.">Additional Information</span>
+    </div>
+    <div class="field-group">
+        <label for="description">Description</label>
+        <input class="text long-field" id="description" name="description" value="$action.getDescription()"/>
+        <span id="description-tooltip" class="aui-icon aui-icon-small aui-iconfont-info" style="padding-top: 15px; vertical-align: top;" title="Optional description.">Additional Information</span>
+    </div>
+    <div class="field-group">
+        <label for="select-resource">Hyperion Script <span class="aui-icon icon-required">(required)</span></label>
+        <aui-select id="select-resource" name="selected-resource" class="long-field" placeholder="Select Hyperion Script" onchange="resourceValueChanged()">
+            #foreach ($resource in $action.getResources())
+            #if($resource.runnable)
+            #if($resource.name == $selectedResource.replaceAll(".Runnable", ""))
+            <aui-option selected="true" value="${resource.name}.Runnable">[Built-In] $resource.name</aui-option>
+            #else
+            <aui-option value="${resource.name}.Runnable">[Built-In] $resource.name</aui-option>
+            #end
+            #else
+            #if($resource.name == $selectedResource)
+            <aui-option selected="true" value="$resource.name">$resource.name</aui-option>
+            #else
+            <aui-option value="$resource.name">$resource.name</aui-option>
+            #end
+            #end
+            #end
+        </aui-select>
+        <span id="select-resource-tooltip" class="aui-icon aui-icon-small aui-iconfont-info" title="Hyperion script to run when this HTTP Endpoint gets executed.">Additional Information</span>
+        <div id="resource-description" style="display: none;"></div>
+    </div>
+    <div class="field-group">
+        <label for="allow-anonymous">Allow Anonymous <span id="allow-anonymous-tooltip" class="aui-icon aui-icon-small aui-iconfont-info" title="Specifies whether unauthenticated users can access this HTTP Endpoint.">Additional Information</span></label>
+        #if(!$action.getAllowAnonymous())
+        <input class="checkbox" type="checkbox" name="allow-anonymous" id="allow-anonymous" style="margin-top: 9px;"/>
+        #else
+        <input class="checkbox" type="checkbox" name="allow-anonymous" id="allow-anonymous" checked="checked" style="margin-top: 9px;"/>
+        #end
+    </div>
+    <fieldset class="group">
+        <legend><span>Allowed Methods</span></legend>
+        <div class="checkbox">
+            #if(!$action.getMethodGet())
+            <input class="checkbox" type="checkbox" name="method-get" id="method-get"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-get" id="method-get" checked="checked"/>
+            #end
+            <label for="method-get">GET</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodHead())
+            <input class="checkbox" type="checkbox" name="method-head" id="method-head"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-head" id="method-head" checked="checked"/>
+            #end
+            <label for="method-head">HEAD</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodPost())
+            <input class="checkbox" type="checkbox" name="method-post" id="method-post"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-post" id="method-post" checked="checked"/>
+            #end
+            <label for="method-post">POST</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodPut())
+            <input class="checkbox" type="checkbox" name="method-put" id="method-put"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-put" id="method-put" checked="checked"/>
+            #end
+            <label for="method-put">PUT</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodDelete())
+            <input class="checkbox" type="checkbox" name="method-delete" id="method-delete"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-delete" id="method-delete" checked="checked"/>
+            #end
+            <label for="method-delete">DELETE</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodOptions())
+            <input class="checkbox" type="checkbox" name="method-options" id="method-options"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-options" id="method-options" checked="checked"/>
+            #end
+            <label for="method-options">OPTIONS</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodTrace())
+            <input class="checkbox" type="checkbox" name="method-trace" id="method-trace"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-trace" id="method-trace" checked="checked"/>
+            #end
+            <label for="method-trace">TRACE</label>
+        </div>
+        <div class="checkbox">
+            #if(!$action.getMethodPatch())
+            <input class="checkbox" type="checkbox" name="method-patch" id="method-patch"/>
+            #else
+            <input class="checkbox" type="checkbox" name="method-patch" id="method-patch" checked="checked"/>
+            #end
+            <label for="method-patch">PATCH</label>
+        </div>
+    </fieldset>
+    <div class="field-group">
+        <label>Configuration <span id="json-config-tooltip" class="aui-icon aui-icon-small aui-iconfont-info" title="JSON to be injected into Hyperion Script for additional configuration. Alternatively also known as admin config.">Additional Information</span></label>
+        <div style="height: 310px; width: 760px; padding-top: 5px;">
+            <div id="ace-editor" style="position: absolute; width: 800px; height: 300px;">$action.getJSONConfig()</div>
+            <div id="ace-editor-loading" class="button-spinner" style="padding-top: 10px;"></div>
+        </div>
+        <input type="hidden" id="json-config" name="json-config"/>
+    </div>
+    <div class="field-group">
+        <input id="save-config" type="button" value="Save" class="aui-button aui-button-primary"/>
+        <a href="HeliosHttpEndpointsConfigAction.jspa" class="aui-button-cancel">Cancel</a>
+    </div>
+</form>
+<script>
+    AJS.$(document).ready(function(){
+        AJS.$("#name-tooltip").tooltip();
+        AJS.$("#description-tooltip").tooltip();
+        AJS.$("#allow-anonymous-tooltip").tooltip();
+        AJS.$("#select-resource-tooltip").tooltip();
+        AJS.$("#json-config-tooltip").tooltip();
+
+        var tryInitAceEditor = function() {
+            try {
+                editor = ace.edit("ace-editor");
+                editor.getSession().setUseWorker(false);
+                editor.setOption("showPrintMargin", false);
+
+                var JsonMode = ace.require("ace/mode/json").Mode;
+                editor.session.setMode(new JsonMode());
+            } catch (e) {
+                setTimeout(function() {
+                    tryInitAceEditor();
+                }, 100);
+            }
+        }
+        tryInitAceEditor();
+
+        AJS.$('#save-config').click(function () {
+            AJS.$('#json-config').val(editor.getValue());
+            AJS.$('#config-form').submit();
+        });
+
+        #if($selectedResource && $selectedResource.length() > 0)
+            getDescription();
+        #end
+    });
+</script>
+</body>
+</html>

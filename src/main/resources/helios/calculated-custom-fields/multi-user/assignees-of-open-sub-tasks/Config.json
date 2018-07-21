@@ -1,0 +1,13 @@
+{
+  "$schema": "#hyperion/calculated-custom-field-config.json",
+  "sharedGlobalScope": false,
+  "description": "Shows the list of assignees of sub-tasks that are not in closed status, and will display the number of assigned sub-tasks after each user name.",
+  "useCustomViewTemplate": true,
+  "useCustomSearchColumnTemplate": true,
+  "useCustomSearchXMLTemplate": true,
+  "addAdditionalVelocityParameters": true,
+  "webResources": [
+  ],
+  "webResourcesForContext": [
+  ]
+}

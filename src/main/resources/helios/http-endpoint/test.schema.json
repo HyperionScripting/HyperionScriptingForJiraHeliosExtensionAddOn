@@ -1,0 +1,25 @@
+[
+  {
+    "uri": "#helios/http-endpoint-test-params.json",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "default": "GET",
+          "description": "HTTP Method to execute.",
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "DELETE",
+            "OPTIONS",
+            "TRACE",
+            "PATCH"
+          ]
+        }
+      }
+    }
+  }
+]

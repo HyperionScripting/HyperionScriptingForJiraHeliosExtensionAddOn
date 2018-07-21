@@ -1,0 +1,10 @@
+##Modified JIRA multi user picker custom field template to include number of assigned issues
+<div class="shorten" id="${customField.id}-field">
+    #foreach ($assignee in $assignees)
+        #if ($displayParameters && $displayParameters.nolink)
+            $textutils.htmlEncode($assignee.key.displayName) ($assignee.value)#commaonly($value)
+        #else
+            <span class="tinylink">$userformat.formatUserkey($assignee.key.key, 'avatarFullNameHover', "multiuser_cf")</span> ($assignee.value)#commaonly($value)
+        #end
+    #end
+</div>

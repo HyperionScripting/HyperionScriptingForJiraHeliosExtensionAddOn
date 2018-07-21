@@ -1,0 +1,4 @@
+{
+  "$schema": "#helios/http-endpoint-test-params.json",
+  "method": "GET"
+}
